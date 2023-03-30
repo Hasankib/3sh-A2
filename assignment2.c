@@ -137,7 +137,7 @@ int main(int argc, char const *argv[]) {
             phys_memory_entries += 256;
         }
         physical_address = (page_table[page_number] << OFFSET_BITS) | offset;
-        printf("Virtual addr is %d: Page# = %d & Offset = %d.", virtual_address, page_number, offset);
+        printf("Virtual addr is %d: Physical address = %d & Value = %d.", virtual_address, new_loc, phys_memory[new_loc]);
         // Note: No need to include a "\n" because each line in the
         //       text file ends with a "\n".
     }
