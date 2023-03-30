@@ -118,11 +118,10 @@ int main(int argc, char const *argv[]) {
     int addresses = 0;
     while (fgets (buff, BUFFER_SIZE, fptr) != NULL) {
         addresses++;
-        printf("The buffer is: %s", buff);
+        
         virtual_address = atoi(buff);
         page_number = virtual_address >> OFFSET_BITS;
         offset = virtual_address & OFFSET_MASK;
-        
         if(page_table[page_number] == -1){  // page fault occured
             page_faults++;
             if (phys_memory_entries == PHYS_MEM_SIZE) {
@@ -130,14 +129,14 @@ int main(int argc, char const *argv[]) {
                 phys_memory_head += 256;
                 phys_memory_entries -= 256;
             }
-            new_loc = (phys_memory_head + phys_memory_entries) % PHYS_MEM_SIZE
+            new_loc = (phys_memory_head + phys_memory_entries) % PHYS_MEM_SIZE;
             memcpy(phys_memory + new_loc, mmapfptr + (PAGE_SIZE * page_number), PAGE_SIZE);
             page_table[page_number] = new_loc / 256;
             page_corresponding_to_frame[new_loc/256] = page_number;
             phys_memory_entries += 256;
         }
         physical_address = (page_table[page_number] << OFFSET_BITS) | offset;
-        printf("Virtual addr is %d: Physical address = %d & Value = %d.", virtual_address, new_loc, phys_memory[new_loc]);
+        printf("Virtual addr is %d: Physical address = %d & Value = %d.\n", virtual_address, new_loc, phys_memory[new_loc]);
         // Note: No need to include a "\n" because each line in the
         //       text file ends with a "\n".
     }
