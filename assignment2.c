@@ -45,6 +45,9 @@
  */
 
 #include <stdlib.h> // Standard Library
+#include <sys/mman.h> /*For mmap() function*/
+#include <string.h> /*For memcpy function*/
+#include <fcntl.h> /*For file descriptors*/
 #include <stdio.h>  // Standard I/O Operations
 
 // STEP 1 : Appropriately set the following macros:
@@ -61,6 +64,7 @@
 #define OFFSET_BITS 8
 #define OFFSET_MASK 255
 #define TLB_SIZE 16
+#define FRAME_COUNT 128
 
 typedef struct {
     int page_number;
@@ -95,6 +99,7 @@ void TLB_Add(int page_number, int frame_number) {
     }
 }
 
+
 /**
  * Main function
  */
@@ -110,6 +115,8 @@ int main(int argc, char const *argv[]) {
     //          a regular int. To differentiate the two, think about
     //          which one is allowed to be negative and which one is
     //          not.
+    int phys_memory[FRAME_COUNT];
+    signed char *mmapfptr;
     unsigned page_number;
     int frame_number;
     unsigned virtual_address;
@@ -134,7 +141,8 @@ int main(int argc, char const *argv[]) {
     //         ``labaddr.txt`` file.
     // HINT   : FILE * name = fopen("file_name.txt", "permission");
     FILE *fptr = fopen("addresses.txt", "r");
-
+    int mmapfile_fd = open("BACKING_STORE.bin", O_RDONLY);
+    mmapfptr = mmap(0, PAGE_SIZE * PAGES, PROT_READ, MAP_PRIVATE, mmapfile_fd, 0);
     // STEP 5A : What does "r" stand for? Are there other permissions
     //           we can use to access/modify the file?
     // HINT    : Refer to manual via `man fopen`
@@ -185,6 +193,9 @@ int main(int argc, char const *argv[]) {
         // frame_number = page_table[page_number];
         offset = virtual_address & OFFSET_MASK;
         // physical_address = (frame_number << OFFSET_BITS) | offset;
+        // if page fault:
+            phys_memory[oldest] = - 1
+            memcpy(phys_memory + oldest, mmapfptr + PAGE_SIZE * page_number, PAGE_SIZE); //note page size = frame size
         printf("Virtual addr is %d: Page# = %d & Offset = %d.", virtual_address, page_number, offset);
         // Note: No need to include a "\n" because each line in the
         //       text file ends with a "\n".
