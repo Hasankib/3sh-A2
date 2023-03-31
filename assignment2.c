@@ -19,7 +19,7 @@
 #define OFFSET_MASK 255
 #define TLB_SIZE 16
 #define FRAME_COUNT 128
-#define PHYS_MEM_SIZE FRAME_COUNT * PAGE_SIZE
+#define PHYS_MEM_SIZE 32768
 
 typedef struct {
     int page_number;
@@ -116,6 +116,7 @@ int main(int argc, char const *argv[]) {
     int new_loc = 0;
     int page_faults = 0;
     int addresses = 0;
+    int8_t val;
     while (fgets (buff, BUFFER_SIZE, fptr) != NULL) {
         addresses++;
         
@@ -126,7 +127,7 @@ int main(int argc, char const *argv[]) {
             page_faults++;
             if (phys_memory_entries == PHYS_MEM_SIZE) {
                 page_table[page_corresponding_to_frame[phys_memory_head/256]] = -1;
-                phys_memory_head += 256;
+                phys_memory_head = (phys_memory_head + 256) % PHYS_MEM_SIZE;
                 phys_memory_entries -= 256;
             }
             new_loc = (phys_memory_head + phys_memory_entries) % PHYS_MEM_SIZE;
@@ -136,7 +137,8 @@ int main(int argc, char const *argv[]) {
             phys_memory_entries += 256;
         }
         physical_address = (page_table[page_number] << OFFSET_BITS) | offset;
-        printf("Virtual addr is %d: Physical address = %d & Value = %d.\n", virtual_address, new_loc, phys_memory[new_loc]);
+        val = phys_memory[physical_address];
+        printf("Virtual addr is %d: Physical address = %d & Value = %d.\n", virtual_address, physical_address, val);
         // Note: No need to include a "\n" because each line in the
         //       text file ends with a "\n".
     }
