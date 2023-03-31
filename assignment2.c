@@ -21,38 +21,7 @@
 #define FRAME_COUNT 128
 #define PHYS_MEM_SIZE FRAME_COUNT * PAGE_SIZE
 
-typedef struct {
-    int page_number;
-    int frame_number;
-} TLBentry;
 
-TLBentry TLB[TLB_SIZE];
-
-int TLB_entries = 0;
-int TLB_head = 0;
-
-
-// Search the TLB for entry corresponding to given page number.
-
-int search_TLB(int page_number) {
-    int i;
-    for (i = 0; i < TLB_entries; i++) {
-        if (TLB[(TLB_head + i) % TLB_SIZE].page_number == page_number) {
-            return TLB[(TLB_head + i) % TLB_SIZE].frame_number;
-        }
-    }
-    return -1;
-}
-
-
-void TLB_Add(int page_number, int frame_number) {
-    if (TLB_entries < TLB_SIZE) {
-        TLB[TLB_entries++] = (TLBentry) { page_number, frame_number };
-    } else {
-        TLB[TLB_head++] = (TLBentry) { page_number, frame_number };
-        TLB_head %= TLB_SIZE;
-    }
-}
 
 /**
  * Main function
