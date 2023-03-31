@@ -21,8 +21,8 @@
 #define FRAME_COUNT 128
 #define PHYS_MEM_SIZE 32768
 
-
-
+char phys_memory[FRAME_COUNT * PAGE_SIZE];
+signed char *mmapfptr;
 /**
  * Main function
  */
@@ -39,11 +39,11 @@ int main(int argc, char const *argv[]) {
     //          which one is allowed to be negative and which one is
     //          not.
     
-    signed char *mmapfptr;
+    
     unsigned page_number;
     int frame_number;
     unsigned virtual_address;
-    unsigned physical_address;
+    int physical_address;
     unsigned offset;
     // STEP 3 : Declare a character array called 'buffer' that can
     //          store/hold 10 characters. The size of the buffer is
@@ -79,19 +79,21 @@ int main(int argc, char const *argv[]) {
     //            - B = Buffer size (How many characters to read?)
     //            - C = Source (Where to read from?)
     int page_corresponding_to_frame[FRAME_COUNT];
-    int phys_memory[FRAME_COUNT * PAGE_SIZE];
+    
     int phys_memory_entries = 0;
     int phys_memory_head = 0;
     int new_loc = 0;
     int page_faults = 0;
     int addresses = 0;
     int8_t val;
+
     while (fgets (buff, BUFFER_SIZE, fptr) != NULL) {
         addresses++;
-        
+
         virtual_address = atoi(buff);
         page_number = virtual_address >> OFFSET_BITS;
         offset = virtual_address & OFFSET_MASK;
+
         if(page_table[page_number] == -1){  // page fault occured
             page_faults++;
             if (phys_memory_entries == PHYS_MEM_SIZE) {
@@ -105,9 +107,10 @@ int main(int argc, char const *argv[]) {
             page_corresponding_to_frame[new_loc/256] = page_number;
             phys_memory_entries += 256;
         }
+        
         physical_address = (page_table[page_number] << OFFSET_BITS) | offset;
         val = phys_memory[physical_address];
-        printf("Virtual addr is %d: Physical address = %d & Value = %d.\n", virtual_address, physical_address, val);
+        printf("Virtual addr is %d: Physical address = %d Value = %d\n", virtual_address, physical_address, val);
         // Note: No need to include a "\n" because each line in the
         //       text file ends with a "\n".
     }
