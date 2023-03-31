@@ -76,7 +76,7 @@ void TLB_Update(int page_number, int frame_number) {
         }
     }
     
-    TLB_Add(new_page_number, new_frame_number);
+    TLB_Add(page_number, frame_number);
 }
 
 
