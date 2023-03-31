@@ -37,6 +37,10 @@ int TLB_entries = 0;
 int TLB_head = 0;
 int TLBHit = 0;
 
+ //function prototype
+int search_TLB(int page_number);
+void TLB_Add(int page_number, int frame_number);
+void TLB_Update(int page_number, int frame_number);
 
 // Search the TLB for entry corresponding to given page number.
 
@@ -63,11 +67,11 @@ void TLB_Add(int page_number, int frame_number) {
     }
 }
 
-void TLB_Update(int old_page_number, int new_page_number, int new_frame_number){
+void TLB_Update(int page_number, int frame_number) {
     int i;
     for (i = 0; i < TLB_entries; i++) {
-        if (TLB[(TLB_head + i) % TLB_SIZE].page_number == old_page_number) {
-            TLB[(TLB_head + i) % TLB_SIZE] = (TLBentry) { new_page_number, new_frame_number };
+        if (TLB[(TLB_head + i) % TLB_SIZE].page_number == page_number) {
+            TLB[(TLB_head + i) % TLB_SIZE] = (TLBentry) { page_number, frame_number };
             return;
         }
     }
