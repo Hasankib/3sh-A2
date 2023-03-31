@@ -52,7 +52,7 @@ int search_TLB(int page_number) {
             return TLB[(TLB_head + i) % TLB_SIZE].frame_number;
         }
     }
-    return -1;
+    return -2;
 }
 
 
@@ -143,6 +143,7 @@ int main(int argc, char const *argv[]) {
     int page_faults = 0;
     int addresses = 0;
     int8_t val;
+    int virt_data;
 
     while (fgets (buff, BUFFER_SIZE, fptr) != NULL) {
         addresses++;
@@ -150,20 +151,27 @@ int main(int argc, char const *argv[]) {
         virtual_address = atoi(buff);
         page_number = virtual_address >> OFFSET_BITS;
         offset = virtual_address & OFFSET_MASK;
-
-        if(page_table[page_number] == -1){  // page fault occured
-            page_faults++;
-            if (phys_memory_entries == PHYS_MEM_SIZE) {
-                page_table[page_corresponding_to_frame[phys_memory_head/256]] = -1;
-                phys_memory_head = (phys_memory_head + 256) % PHYS_MEM_SIZE;
-                phys_memory_entries -= 256;
+        virt_data = search_TLB(page_table[page_number]);
+        if(virt_data == -2)
+        {
+            virt_data = page_table[page_number];
+            if(virt_data == -1){  // page fault occured
+                page_faults++;
+                if (phys_memory_entries == PHYS_MEM_SIZE) 
+                {
+                    page_table[page_corresponding_to_frame[phys_memory_head/256]] = -1;
+                    phys_memory_head = (phys_memory_head + 256) % PHYS_MEM_SIZE;
+                    phys_memory_entries -= 256;
+                }
+                new_loc = (phys_memory_head + phys_memory_entries) % PHYS_MEM_SIZE;
+                memcpy(phys_memory + new_loc, mmapfptr + (PAGE_SIZE * page_number), PAGE_SIZE);
+                page_table[page_number] = new_loc / 256;
+                page_corresponding_to_frame[new_loc/256] = page_number;
+                phys_memory_entries += 256;
             }
-            new_loc = (phys_memory_head + phys_memory_entries) % PHYS_MEM_SIZE;
-            memcpy(phys_memory + new_loc, mmapfptr + (PAGE_SIZE * page_number), PAGE_SIZE);
-            page_table[page_number] = new_loc / 256;
-            page_corresponding_to_frame[new_loc/256] = page_number;
-            phys_memory_entries += 256;
+            TLB_Add(page_number, page_table[page_number]);
         }
+        
 
         physical_address = (page_table[page_number] << OFFSET_BITS) | offset;
         val = phys_memory[physical_address];
@@ -201,7 +209,7 @@ int main(int argc, char const *argv[]) {
     munmap(mmapfptr, PAGE_SIZE * PAGES);
     printf("Total addresses = %d\n", addresses);
     printf("Page_faults = %d\n", page_faults);
-    printf("TLB Hits = %d\n", 0);
+    printf("TLB Hits = %d\n", TLBHit);
     return 0;
 }
  
