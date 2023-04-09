@@ -97,6 +97,35 @@ int FCFS() {
     return head_movements;
 }
 
+int SSTF() {
+    int head_movements = 0;
+    int head = init_head;
+    int closest_to_head_index;
+    int closest_dist_to_head = 300;
+    int seen[INT_COUNT] = {0};
+    for (int i = 0; i < INT_COUNT; i++) {
+        for (int x = 0; x < INT_COUNT; x++)
+        {
+            if(seen[x] == 0 && abs(head - requests[x]) < closest_dist_to_head)
+            {
+                closest_dist_to_head = abs(head - requests[x]);
+                closest_to_head_index = x;
+            }
+        }
+        
+        seen[closest_to_head_index] = 1;
+        printf("%d", requests[closest_to_head_index]);
+        if(i < INT_COUNT - 1)
+        {
+            printf(", ");
+        }
+        head_movements = head_movements + closest_dist_to_head;
+        closest_dist_to_head = 300;
+        head = requests[closest_to_head_index];
+    }
+    return head_movements;
+}
+
 /**
  * Main function
  */
@@ -143,6 +172,11 @@ int main(int argc, char const *argv[]) {
     printf("\nFCFS DISK SCHEDULING ALGORITHM:\n\n");
     int fcfs_hm = FCFS();
     printf("\n\nFCFS - Total head movements = %d\n", fcfs_hm);
+
+    // do SSTF
+    printf("\nSSTF DISK SCHEDULING ALGORITHM:\n\n");
+    int sstf_hm = SSTF();
+    printf("\n\nSSTF - Total head movements = %d\n", sstf_hm);
     return 0;
 }
  
