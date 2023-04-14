@@ -14,66 +14,86 @@
 // #define TLB_SIZE 16
 // #define FRAME_COUNT 128
 // #define PHYS_MEM_SIZE 32768
-#define TLB_SIZE 16
+// #define TLB_SIZE 16
 
 int requests[INT_COUNT];
-int sorted_requests[INT_COUNT];
+int sortedrequests[INT_COUNT];
 int init_head;
 int direction_right;
 signed char *mmapfptr;
 
-typedef struct {
-    int page_number;
-    int frame_number;
-} TLBentry;
+// typedef struct {
+//     int page_number;
+//     int frame_number;
+// } TLBentry;
 
-TLBentry TLB[TLB_SIZE];
+// TLBentry TLB[TLB_SIZE];
 
-int TLB_entries = 0;
-int TLB_head = 0;
-int TLBHit = 0;
+// int TLB_entries = 0;
+// int TLB_head = 0;
+// int TLBHit = 0;
 
- //function prototype
-int search_TLB(int page_number);
-void TLB_Add(int page_number, int frame_number);
-void TLB_Update(int page_number, int frame_number);
+//  //function prototype
+// int search_TLB(int page_number);
+// void TLB_Add(int page_number, int frame_number);
+// void TLB_Update(int page_number, int frame_number);
 
-// Search the TLB for entry corresponding to given page number.
+// // Search the TLB for entry corresponding to given page number.
 
-int search_TLB(int page_number) {
-    int i;
-    for (i = 0; i < TLB_entries; i++) {
-        if (TLB[(TLB_head + i) % TLB_SIZE].page_number == page_number) {
-            TLBHit++;
-            return TLB[(TLB_head + i) % TLB_SIZE].frame_number;
-        }
-    }
-    return -2;
-}
+// int search_TLB(int page_number) {
+//     int i;
+//     for (i = 0; i < TLB_entries; i++) {
+//         if (TLB[(TLB_head + i) % TLB_SIZE].page_number == page_number) {
+//             TLBHit++;
+//             return TLB[(TLB_head + i) % TLB_SIZE].frame_number;
+//         }
+//     }
+//     return -2;
+// }
 
-// Add to TLB
-void TLB_Add(int page_number, int frame_number) {
-    if (TLB_entries < TLB_SIZE) {
-        TLB[TLB_entries] = (TLBentry) { page_number, frame_number };
-        TLB_entries++;
-    } else {
-        TLB[TLB_head] = (TLBentry) { page_number, frame_number };
-        TLB_head++;
-        TLB_head %= TLB_SIZE;
-    }
-}
+// // Add to TLB
+// void TLB_Add(int page_number, int frame_number) {
+//     if (TLB_entries < TLB_SIZE) {
+//         TLB[TLB_entries] = (TLBentry) { page_number, frame_number };
+//         TLB_entries++;
+//     } else {
+//         TLB[TLB_head] = (TLBentry) { page_number, frame_number };
+//         TLB_head++;
+//         TLB_head %= TLB_SIZE;
+//     }
+// }
 
-// Update TLB
-void TLB_Update(int page_number, int frame_number) {
-    int i;
-    for (i = 0; i < TLB_entries; i++) {
-        if (TLB[(TLB_head + i) % TLB_SIZE].page_number == page_number) {
-            TLB[(TLB_head + i) % TLB_SIZE] = (TLBentry) { page_number, frame_number };
-            return;
-        }
-    }
+// // Update TLB
+// void TLB_Update(int page_number, int frame_number) {
+//     int i;
+//     for (i = 0; i < TLB_entries; i++) {
+//         if (TLB[(TLB_head + i) % TLB_SIZE].page_number == page_number) {
+//             TLB[(TLB_head + i) % TLB_SIZE] = (TLBentry) { page_number, frame_number };
+//             return;
+//         }
+//     }
     
-    TLB_Add(page_number, frame_number);
+//     TLB_Add(page_number, frame_number);
+// }
+
+
+
+void swap(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+ //bubble-sort being used for array in ascending order
+int* sort(const int requests[], int sorted[]) {
+    memcpy(sorted, requests, INT_COUNT*sizeof(int));
+    for (int i = 0; i < INT_COUNT-1; i++) {
+        for (int j = 0; j < INT_COUNT-i-1; j++) {
+            if (sorted[j] > sorted[j+1]) {
+                swap(&sorted[j], &sorted[j+1]);
+            }
+        }
+    }
+    return sorted;
 }
 
 // FCFS function
@@ -124,6 +144,126 @@ int SSTF() {
         head = requests[closest_to_head_index];
     }
     return head_movements;
+}
+
+int SCAN(int *sortedrequests, int requests[]){
+    int head_movements = 0;
+    int curr = init_head;
+    int i = 0;
+    int j = INT_COUNT - 1;
+
+    sortedrequests = sort(requests, sortedrequests);
+
+    while (i <= j) {
+        if (direction_right == 1) {
+            if (sortedrequests[i] >= curr) {
+                head_movements += abs(sortedrequests[i] - curr);
+                printf("%d, ", requests[i]);
+                curr = sortedrequests[i];
+                i++;
+            }
+            else {
+                head_movements += abs(curr - 300);
+                curr = 300;
+                direction_right = 0;
+            }
+        }
+        else {
+            if (sortedrequests[j] <= curr) {
+                head_movements += abs(sortedrequests[j] - curr);
+                printf("%d, ", requests[j]); 
+                curr = sortedrequests[j];
+                j--;
+            }
+            else {
+                head_movements += abs(curr);
+                curr = 0;
+                direction_right = 1;
+            }
+        }
+        
+    }
+    
+
+    return head_movements;
+}
+
+// int CSCAN(int *sortedrequests, int requests[]){
+//     int head_movements = 0;
+//     int curr = init_head;
+//     int i = 0;
+//     int j = INT_COUNT - 1;
+//     int upper = 299;
+
+
+//     while (i <= j) {
+//         if (direction_right == 1) {
+//             if (sortedrequests[i] >= curr) {
+//                 head_movements += abs(sortedrequests[i] - curr);
+//                 printf("%d, ", requests[i]);
+//                 curr = sortedrequests[i];
+//                 i++;
+//             }
+//             else {
+//                 head_movements += upper;
+//                 curr = 300;
+//                 direction_right = 0;
+//             }
+//         }
+//         else {
+//             if (sortedrequests[j] <= curr) {
+//                 head_movements += abs(sortedrequests[j] - curr);
+//                 printf("%d, ", requests[j]); 
+//                 curr = sortedrequests[j];
+//                 j--;
+//             }
+//             else {
+//                 head_movements += abs(curr);
+//                 curr = 0;
+//                 direction_right = 1;
+//             }
+//         }
+        
+//     }
+    
+
+//     return head_movements;
+// }
+
+int LOOK(int* sortedrequests) {
+
+	int total_head_movements = 0;
+
+    int current_position = init_head;
+    int i;
+
+    if (direction_right == 1) {
+        // Head is moving towards higher cylinders
+        for (i = 0; i < INT_COUNT; i++) {
+            if (sortedrequests[i] >= current_position) {
+                total_head_movements += sortedrequests[i] - current_position;
+                current_position = sortedrequests[i];
+            }
+        }
+
+        // Calculate head movements to the highest cylinder
+        total_head_movements += 299 - current_position;
+    }
+    else {
+        // Head is moving towards lower cylinders
+        for (i = INT_COUNT - 1; i >= 0; i--) {
+            if (sortedrequests[i] <= current_position) {
+                total_head_movements += current_position - sortedrequests[i];
+                current_position = sortedrequests[i];
+            }
+        }
+
+        // Calculate head movements to the lowest cylinder
+        total_head_movements += current_position;
+    }
+
+
+	return total_head_movements;
 }
 
 /**
@@ -177,6 +317,20 @@ int main(int argc, char const *argv[]) {
     printf("\nSSTF DISK SCHEDULING ALGORITHM:\n\n");
     int sstf_hm = SSTF();
     printf("\n\nSSTF - Total head movements = %d\n", sstf_hm);
+
+    // do SCAN
+    printf("\nSCAN DISK SCHEDULING ALGORITHM:\n\n");
+    int scan_hm = SCAN(sortedrequests, requests);
+    printf("\n\nSCAN - Total head movements = %d\n", scan_hm);
+
+    // printf("\nC-SCAN DISK SCHEDULING ALGORITHM:\n\n");
+    // int cscan_hm = CSCAN(sortedrequests, requests);
+    // printf("\n\nC-SCAN - Total head movements = %d\n", cscan_hm);
+
+    printf("\nLOOK DISK SCHEDULING ALGORITHM:\n\n");
+    int look_hm = LOOK(sortedrequests);
+    printf("\n\nLOOK- Total head movements = %d\n", look_hm);
+
     return 0;
 }
  
