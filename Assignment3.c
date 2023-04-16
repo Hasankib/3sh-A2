@@ -262,47 +262,115 @@ int SCAN(int *sortedrequests){
     return head_movements;
 }
 
-// int CSCAN(int *sortedrequests, int requests[]){
-//     int head_movements = 0;
-//     int curr = init_head;
-//     int i = 0;
-//     int j = INT_COUNT - 1;
-//     int upper = 299;
+int CSCAN(int *sortedrequests){
+    int head_movements = 0;
+    int curr;
+    int init_head_spot;
+    int i = 0;
+    int dir = direction_right;
+    int just_switched = 0;
+    // sortedrequests = sort(requests, sortedrequests);
 
+    // find initial head spot in sorted array and store it for later
+    for (int i = 0; i < INT_COUNT; i++) {
+        if(sortedrequests[i] == init_head)
+        {
+            curr = i;
+            init_head_spot = i;
+        }
+    }
 
-//     while (i <= j) {
-//         if (direction_right == 1) {
-//             if (sortedrequests[i] >= curr) {
-//                 head_movements += abs(sortedrequests[i] - curr);
-//                 printf("%d, ", requests[i]);
-//                 curr = sortedrequests[i];
-//                 i++;
-//             }
-//             else {
-//                 head_movements += upper;
-//                 curr = 300;
-//                 direction_right = 0;
-//             }
-//         }
-//         else {
-//             if (sortedrequests[j] <= curr) {
-//                 head_movements += abs(sortedrequests[j] - curr);
-//                 printf("%d, ", requests[j]); 
-//                 curr = sortedrequests[j];
-//                 j--;
-//             }
-//             else {
-//                 head_movements += abs(curr);
-//                 curr = 0;
-//                 direction_right = 1;
-//             }
-//         }
+    // calculate total head movements
+    if(init_head == INT_COUNT - 1 || init_head == 0)
+    {
+        head_movements = abs(sortedrequests[curr] - sortedrequests[0]);
+    }
+    else if (direction_right == 1)
+    {
+        head_movements = abs(sortedrequests[curr] - 299) + 299;
+        head_movements = head_movements + sortedrequests[curr - 1];
+    }
+    else
+    {
+        head_movements = sortedrequests[curr] + 299;
+        head_movements = head_movements + abs(sortedrequests[curr + 1] - 299);
+    }
+
+    // iterate all entries to print them
+    while(i <= INT_COUNT - 1)
+    {
+        // direction going left starting off from head
+        while(i <= INT_COUNT - 1 && dir == 0 && curr >= 0)
+        {
+            printf("%d", sortedrequests[curr]);
+            if(i < INT_COUNT - 1)
+            {
+                printf(", ");
+            }
+            curr --;
+            i ++;
+            if(curr == -1)
+            {
+                dir = 3;
+                just_switched = 1;
+            }
+        }
+
+        // direction going right starting off from head
+        while(i <= INT_COUNT - 1 && dir == 1 && curr <= INT_COUNT - 1)
+        {
+            printf("%d", sortedrequests[curr]);
+            if(i < INT_COUNT - 1)
+            {
+                printf(", ");
+            }
+            curr ++;
+            i ++;
+            if(curr == INT_COUNT)
+            {
+                dir = 2;
+                just_switched = 1;
+            }
+        }
+
+        // direction going left after going done left
+        while(i <= INT_COUNT - 1 && dir == 3)
+        {   
+            if(just_switched == 1)
+            {
+                curr = INT_COUNT - 1;
+                just_switched = 0;
+            }
+            printf("%d", sortedrequests[curr]);
+            if(i < INT_COUNT - 1)
+            {
+                printf(", ");
+            }
+            curr --;
+            i ++;
+        }
+
+        // direction going right after going done right
+        while(i <= INT_COUNT - 1 && dir == 2)
+        {
+            if(just_switched == 1)
+            {
+                curr = 0;
+                just_switched = 0;
+            }
+            printf("%d", sortedrequests[curr]);
+            if(i < INT_COUNT - 1)
+            {
+                printf(", ");
+            }
+            curr ++;
+            i ++;
+        }
         
-//     }
-    
+    }
 
-//     return head_movements;
-// }
+    return head_movements;
+}
 
 
 
@@ -523,9 +591,9 @@ int main(int argc, char const *argv[]) {
     int scan_hm = SCAN(sortedrequests);
     printf("\n\nSCAN - Total head movements = %d\n", scan_hm);
 
-    // printf("\nC-SCAN DISK SCHEDULING ALGORITHM:\n\n");
-    // int cscan_hm = CSCAN(sortedrequests, requests);
-    // printf("\n\nC-SCAN - Total head movements = %d\n", cscan_hm);
+    printf("\nC-SCAN DISK SCHEDULING ALGORITHM:\n\n");
+    int cscan_hm = CSCAN(sortedrequests);
+    printf("\n\nC-SCAN - Total head movements = %d\n", cscan_hm);
 
     printf("\nLOOK DISK SCHEDULING ALGORITHM:\n\n");
     int look_hm = LOOK(sortedrequests);
