@@ -16,11 +16,7 @@
 // #define PHYS_MEM_SIZE 32768
 // #define TLB_SIZE 16
 
-int requests[INT_COUNT];
-int sortedrequests[INT_COUNT];
-int init_head;
-int direction_right;
-signed char *mmapfptr;
+
 
 // typedef struct {
 //     int page_number;
@@ -78,22 +74,32 @@ signed char *mmapfptr;
 
 
 
-void swap(int *a, int *b) {
-    int temp = *a;
-    *a = *b;
-    *b = temp;
-}
- //bubble-sort being used for array in ascending order
-int* sort(const int requests[], int sorted[]) {
-    memcpy(sorted, requests, INT_COUNT*sizeof(int));
-    for (int i = 0; i < INT_COUNT-1; i++) {
-        for (int j = 0; j < INT_COUNT-i-1; j++) {
-            if (sorted[j] > sorted[j+1]) {
-                swap(&sorted[j], &sorted[j+1]);
-            }
-        }
-    }
-    return sorted;
+// void swap(int *a, int *b) {
+//     int temp = *a;
+//     *a = *b;
+//     *b = temp;
+// }
+//  //bubble-sort being used for array in ascending order
+// int* sort(const int requests[], int sorted[]) {
+//     memcpy(sorted, requests, INT_COUNT*sizeof(int));
+//     for (int i = 0; i < INT_COUNT-1; i++) {
+//         for (int j = 0; j < INT_COUNT-i-1; j++) {
+//             if (sorted[j] > sorted[j+1]) {
+//                 swap(&sorted[j], &sorted[j+1]);
+//             }
+//         }
+//     }
+//     return sorted;
+// }
+
+int requests[INT_COUNT];
+int sortedrequests[INT_COUNT];
+int init_head;
+int direction_right;
+signed char *mmapfptr;
+
+int cmpfunc (const void * a, const void * b) {
+   return ( *(int*)a - *(int*)b );
 }
 
 // FCFS function
@@ -146,19 +152,18 @@ int SSTF() {
     return head_movements;
 }
 
-int SCAN(int *sortedrequests, int requests[]){
+int SCAN(int *sortedrequests){
     int head_movements = 0;
     int curr = init_head;
     int i = 0;
     int j = INT_COUNT - 1;
 
-    sortedrequests = sort(requests, sortedrequests);
 
     while (i <= j) {
         if (direction_right == 1) {
             if (sortedrequests[i] >= curr) {
                 head_movements += abs(sortedrequests[i] - curr);
-                printf("%d, ", requests[i]);
+                printf("%d, ", sortedrequests[i]);
                 curr = sortedrequests[i];
                 i++;
             }
@@ -171,7 +176,7 @@ int SCAN(int *sortedrequests, int requests[]){
         else {
             if (sortedrequests[j] <= curr) {
                 head_movements += abs(sortedrequests[j] - curr);
-                printf("%d, ", requests[j]); 
+                printf("%d, ", sortedrequests[j]); 
                 curr = sortedrequests[j];
                 j--;
             }
@@ -230,41 +235,96 @@ int SCAN(int *sortedrequests, int requests[]){
 //     return head_movements;
 // }
 
-int LOOK(int* sortedrequests) {
 
-	int total_head_movements = 0;
 
+int LOOK(int* sortedrequests){
     int current_position = init_head;
+    int head_movements = 0;
     int i;
-
     if (direction_right == 1) {
-        // Head is moving towards higher cylinders
+        // Service sortedrequests to left of inital position
+        for (i = INT_COUNT-1; i >= 0; i--) {
+            if (sortedrequests[i] <= current_position) {
+                printf("%d ", sortedrequests[i]);
+                head_movements += current_position - sortedrequests[i];
+                current_position = sortedrequests[i];
+            }
+        }
+        // Service sortedrequests to the right of initial position
+        for (i = 0; i < INT_COUNT; i++) {
+            if (sortedrequests[i] > current_position) {
+                printf("%d ", sortedrequests[i]);
+                head_movements += sortedrequests[i] - current_position;
+                current_position = sortedrequests[i];
+            }
+        }
+    } else {
+        // Service sortedrequests to the right of initial position
         for (i = 0; i < INT_COUNT; i++) {
             if (sortedrequests[i] >= current_position) {
-                total_head_movements += sortedrequests[i] - current_position;
+                printf("%d ", sortedrequests[i]);
+                head_movements += sortedrequests[i] - current_position;
                 current_position = sortedrequests[i];
             }
         }
-
-        // Calculate head movements to the highest cylinder
-        total_head_movements += 299 - current_position;
-    }
-    else {
-        // Head is moving towards lower cylinders
-        for (i = INT_COUNT - 1; i >= 0; i--) {
-            if (sortedrequests[i] <= current_position) {
-                total_head_movements += current_position - sortedrequests[i];
+        // Service sortedrequests to left of initial position
+        for (i = INT_COUNT-1; i >= 0; i--) {
+            if (sortedrequests[i] < current_position) {
+                printf("%d ", sortedrequests[i]);
+                head_movements += current_position - sortedrequests[i];
                 current_position = sortedrequests[i];
             }
         }
-
-        // Calculate head movements to the lowest cylinder
-        total_head_movements += current_position;
     }
-
-
-	return total_head_movements;
+    return head_movements;
 }
+
+// int CLOOK(int* sortedrequests){
+//     int current_position = init_head;
+//     int head_movements = 0;
+//     int i = 20;
+
+//     if (direction_right == 0) {
+//         // Service sortedrequests to the left of initial position
+//         for (i = INT_COUNT-1; i >= 0; i--) {
+//             if (sortedrequests[i] <= current_position) {
+//                 printf("%d ", sortedrequests[i]);
+//                 head_movements += current_position - sortedrequests[i];
+//                 current_position = sortedrequests[i];
+//             }
+//         }
+        
+//         head_movements += current_position;
+//         current_position = 0;
+//         for (i = 0; i < INT_COUNT; i++) {
+//             if (sortedrequests[i] >= current_position) {
+//                 printf("%d ", sortedrequests[i]);
+//                 head_movements += sortedrequests[i] - current_position;
+//                 current_position = sortedrequests[i];
+//             }
+//         }
+//     } else {
+//         // Service sortedrequests to the right of initial position
+//         for (i = 0; i < INT_COUNT; i++) {
+//             if (sortedrequests[i] >= current_position) {
+//                 printf("%d ", sortedrequests[i]);
+//                 head_movements += sortedrequests[i] - current_position;
+//                 current_position = sortedrequests[i];
+//             }
+//         }
+        
+//         head_movements += 299 - current_position;
+//         current_position = 299;
+//         for (i = INT_COUNT-1; i >= 0; i--) {
+//             if (sortedrequests[i] <= current_position) {
+//                 printf("%d ", sortedrequests[i]);
+//                 head_movements += current_position - sortedrequests[i];
+//                 current_position = sortedrequests[i];
+//             }
+//         }
+//     }
+//     return head_movements;
+// }
 
 /**
  * Main function
@@ -318,9 +378,12 @@ int main(int argc, char const *argv[]) {
     int sstf_hm = SSTF();
     printf("\n\nSSTF - Total head movements = %d\n", sstf_hm);
 
+    memcpy(sortedrequests, requests, INT_COUNT*sizeof(int));
+    qsort(sortedrequests, INT_COUNT, sizeof(int), cmpfunc);
+
     // do SCAN
     printf("\nSCAN DISK SCHEDULING ALGORITHM:\n\n");
-    int scan_hm = SCAN(sortedrequests, requests);
+    int scan_hm = SCAN(sortedrequests);
     printf("\n\nSCAN - Total head movements = %d\n", scan_hm);
 
     // printf("\nC-SCAN DISK SCHEDULING ALGORITHM:\n\n");
@@ -330,6 +393,10 @@ int main(int argc, char const *argv[]) {
     printf("\nLOOK DISK SCHEDULING ALGORITHM:\n\n");
     int look_hm = LOOK(sortedrequests);
     printf("\n\nLOOK- Total head movements = %d\n", look_hm);
+
+    // printf("\nC-LOOK DISK SCHEDULING ALGORITHM:\n\n");
+    // int clook_hm = CLOOK(sortedrequests);
+    // printf("\n\nC-LOOK- Total head movements = %d\n", clook_hm);
 
     return 0;
 }
