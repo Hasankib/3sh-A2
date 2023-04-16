@@ -159,7 +159,7 @@ int SCAN(int *sortedrequests){
     int i = 0;
     int dir = direction_right;
     int just_switched = 0;
-    sortedrequests = sort(requests, sortedrequests);
+    // sortedrequests = sort(requests, sortedrequests);
 
     // find initial head spot in sorted array and store it for later
     for (int i = 0; i < INT_COUNT; i++) {
@@ -307,44 +307,112 @@ int SCAN(int *sortedrequests){
 
 
 int LOOK(int* sortedrequests){
-    int current_position = init_head;
     int head_movements = 0;
-    int i;
-    if (direction_right == 1) {
-        // Service sortedrequests to left of inital position
-        for (i = INT_COUNT-1; i >= 0; i--) {
-            if (sortedrequests[i] <= current_position) {
-                printf("%d ", sortedrequests[i]);
-                head_movements += current_position - sortedrequests[i];
-                current_position = sortedrequests[i];
-            }
-        }
-        // Service sortedrequests to the right of initial position
-        for (i = 0; i < INT_COUNT; i++) {
-            if (sortedrequests[i] > current_position) {
-                printf("%d ", sortedrequests[i]);
-                head_movements += sortedrequests[i] - current_position;
-                current_position = sortedrequests[i];
-            }
-        }
-    } else {
-        // Service sortedrequests to the right of initial position
-        for (i = 0; i < INT_COUNT; i++) {
-            if (sortedrequests[i] >= current_position) {
-                printf("%d ", sortedrequests[i]);
-                head_movements += sortedrequests[i] - current_position;
-                current_position = sortedrequests[i];
-            }
-        }
-        // Service sortedrequests to left of initial position
-        for (i = INT_COUNT-1; i >= 0; i--) {
-            if (sortedrequests[i] < current_position) {
-                printf("%d ", sortedrequests[i]);
-                head_movements += current_position - sortedrequests[i];
-                current_position = sortedrequests[i];
-            }
+    int curr;
+    int init_head_spot;
+    int i = 0;
+    int dir = direction_right;
+    int just_switched = 0;
+    // sortedrequests = sort(requests, sortedrequests);
+
+    // find initial head spot in sorted array and store it for later
+    for (int i = 0; i < INT_COUNT; i++) {
+        if(sortedrequests[i] == init_head)
+        {
+            curr = i;
+            init_head_spot = i;
         }
     }
+
+    // calculate total head movements
+    if(init_head == INT_COUNT - 1 || init_head == 0)
+    {
+        head_movements = abs(sortedrequests[curr] - sortedrequests[0]);
+    }
+    else if (direction_right == 1)
+    {
+        head_movements = abs(sortedrequests[curr] - sortedrequests[INT_COUNT - 1]);
+        head_movements = head_movements + abs(sortedrequests[0] - sortedrequests[INT_COUNT - 1]);
+    }
+    else
+    {
+        head_movements = abs(sortedrequests[curr] - sortedrequests[0]);
+        head_movements = head_movements + abs(sortedrequests[INT_COUNT - 1] - sortedrequests[0]);
+    }
+
+    // iterate all entries to print them
+    while(i <= INT_COUNT - 1)
+    {
+        // direction going left starting off from head
+        while(i <= INT_COUNT - 1 && dir == 0 && curr >= 0)
+        {
+            printf("%d", sortedrequests[curr]);
+            if(i < INT_COUNT - 1)
+            {
+                printf(", ");
+            }
+            curr --;
+            i ++;
+            if(curr == -1)
+            {
+                dir = 2;
+                just_switched = 1;
+            }
+        }
+
+        // direction going right starting off from head
+        while(i <= INT_COUNT - 1 && dir == 1 && curr <= INT_COUNT - 1)
+        {
+            printf("%d", sortedrequests[curr]);
+            if(i < INT_COUNT - 1)
+            {
+                printf(", ");
+            }
+            curr ++;
+            i ++;
+            if(curr == INT_COUNT)
+            {
+                dir = 3;
+                just_switched = 1;
+            }
+        }
+
+        // direction going left after going done right
+        while(i <= INT_COUNT - 1 && dir == 3 && curr >= 0)
+        {   
+            if(just_switched == 1)
+            {
+                curr = init_head_spot - 1;
+                just_switched = 0;
+            }
+            printf("%d", sortedrequests[curr]);
+            if(i < INT_COUNT - 1)
+            {
+                printf(", ");
+            }
+            curr --;
+            i ++;
+        }
+
+        // direction going right after going done left
+        while(i <= INT_COUNT - 1 && dir == 2 && curr <= INT_COUNT - 1)
+        {
+            if(just_switched == 1)
+            {
+                curr = init_head_spot + 1;
+                just_switched = 0;
+            }
+            printf("%d", sortedrequests[curr]);
+            if(i < INT_COUNT - 1)
+            {
+                printf(", ");
+            }
+            curr ++;
+            i ++;
+        }
+        
+    }
+
     return head_movements;
 }
 
